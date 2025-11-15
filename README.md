@@ -8,11 +8,11 @@ This repository provides comprehensive documentation and working code examples f
 
 ## 🚀 Quick Start
 
-**New to PayGov?** → Read [GETTING_STARTED.md](GETTING_STARTED.md) (10 min)
+**Want API details?** → See [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
 
 **Need code now?** → Browse [examples/](examples/) (3 examples)
 
-**Want API details?** → See [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
+**Example Form Entities** → See [FORM_ENTITY_REFERENCE.md](FORM_ENTITY_REFERENCE.md)
 
 ---
 
@@ -296,10 +296,5 @@ Before going to production:
 
 ## 🎉 Next Steps
 
-1. **[Start Here](GETTING_STARTED.md)** → Setup guide and learning path
+1. **[API Reference](API_DOCUMENTATION.md)** → When you need details
 2. **[Pick an Example](examples/)** → Working code you can use
-3. **[API Reference](API_DOCUMENTATION.md)** → When you need details
-
----
-
-**Ready to integrate?** Head to [GETTING_STARTED.md](GETTING_STARTED.md) to begin!
