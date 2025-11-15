@@ -7,7 +7,7 @@
 ---
 ## 1. High-Level Flow
 1. You create an HTML file with a form that POSTs to the PayGov endpoint.  
-2. User opens the HTML file (double-click from desktop or file system).  
+2. User opens the HTML file.  
 3. Form auto-submits immediately using `onload="document.form1.submit();"`.  
 4. PayGov validates required fields and the API password (`apipassword`).  
 5. Dynamic custom form fields (prefixed `F-`, `CP-`, `CPR-`) are parsed and stored; required/optional flags can be toggled using prefixes.  
@@ -37,7 +37,7 @@
 You must include the API password provided by PayGov. The code expects the field name `apipassword` (all lower-case). 
 
 ### Implementation Note
-The examples in this repository are static HTML files with hardcoded credentials that users open directly from their desktop or file system. The `apipassword` is included directly in the HTML file.
+The examples in this repository are static HTML files with hardcoded credentials that users open directly. The `apipassword` is included directly in the HTML file.
 
 ### Test vs Production Credentials
 | Parameter | Description | Example Values |
@@ -141,7 +141,7 @@ Work with PayGov support for access to diagnostic logs if troubleshooting.
 
 ### For Static HTML Files
 
-The examples in this repository are static HTML files meant to be opened directly from a desktop or file system. Consider these security aspects:
+The examples in this repository are static HTML files meant to be opened directly. Consider these security aspects:
 
 | Concern | Recommendation |
 |---------|---------------|
@@ -157,14 +157,13 @@ This static HTML file approach is suitable for:
 - Internal agency use with controlled access
 - Testing and development environments
 - Known and trusted users
-- Desktop applications that generate HTML files dynamically
 
 For public-facing web integrations with many users, consider generating forms server-side with credentials stored securely in environment variables or configuration management systems.
 
 ---
 ## 11. Examples Directory Structure
 
-This repository contains working HTML examples that can be opened directly from your desktop:
+This repository contains working HTML examples that can be opened directly:
 
 ```
 examples/

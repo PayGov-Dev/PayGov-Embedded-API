@@ -36,7 +36,7 @@ This repository provides comprehensive documentation and working code examples f
 All PayGov integrations use this HTML POST pattern:
 
 1. **Edit the HTML file** - Fill in your `ttid`, `apipassword`, and payment details
-2. **User opens the file** - Double-click the .html file on their desktop
+2. **User opens the file** - Double-click the .html file
 3. **Form auto-submits** - Page loads and immediately submits to PayGov
 4. **PayGov collects payment** - User enters payment information securely
 5. **User redirected back** - After payment, user returns to your `successURL`
@@ -76,9 +76,9 @@ All PayGov integrations use this HTML POST pattern:
 
 ## 🔐 Security Considerations
 
-### For Desktop HTML Files
+### For HTML Files
 
-These examples are static HTML files that users open directly from their desktop:
+These examples are static HTML files that users open directly:
 
 ✅ **This approach is suitable for:**
 - Testing and development

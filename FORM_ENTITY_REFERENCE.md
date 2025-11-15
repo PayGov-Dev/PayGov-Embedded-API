@@ -155,7 +155,7 @@ Use these IDs with custom field prefixes:
 
 ## Complete Example Integration
 
-This example shows a static HTML file you can edit and open from your desktop:
+This example shows a static HTML file you can edit and open:
 
 ```html
 <!DOCTYPE html>
