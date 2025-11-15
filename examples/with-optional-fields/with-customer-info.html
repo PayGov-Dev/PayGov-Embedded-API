@@ -1,0 +1,31 @@
+<html>
+<head>
+    <title>PayGov Payment - With Customer Information</title>
+</head>
+<body onload="document.form1.submit();">
+    <form name="form1" method="post" action="https://pay.paygov.us/api/postapi.aspx">
+        <!-- Required Fields -->
+        <input name="ttid" type="hidden" value="YOUR_TTID"> <!-- Required: Transaction Type ID -->
+        <input name="apipassword" type="hidden" value="YOUR_API_PASSWORD"> <!-- Required: API Password -->
+        <input name="paymentAmount" type="hidden" value="150.00"> <!-- Required: Payment Amount -->
+        <input name="successURL" type="hidden" value="https://youragency.example.gov/success"> <!-- Required: Success URL -->
+        <input name="orderToken" type="hidden" value="ORDER-2025-0002"> <!-- Optional but recommended: Your tracking token -->
+        
+        <!-- Optional: Cancel URL -->
+        <input name="CancelURL" type="hidden" value="https://youragency.example.gov/cancel"> <!-- Optional: Cancel URL -->
+        
+        <!-- Optional: Customer Information -->
+        <input name="FirstName" type="hidden" value="John"> <!-- Optional: Customer first name -->
+        <input name="LastName" type="hidden" value="Doe"> <!-- Optional: Customer last name -->
+        <input name="Address1" type="hidden" value="123 Main Street"> <!-- Optional: Street address -->
+        <input name="City" type="hidden" value="Indianapolis"> <!-- Optional: City -->
+        <input name="State" type="hidden" value="IN"> <!-- Optional: State abbreviation -->
+        <input name="ZipCode" type="hidden" value="46062"> <!-- Optional: ZIP code -->
+        <input name="Phone" type="hidden" value="3175551212"> <!-- Optional: Phone number -->
+        <input name="Email" type="hidden" value="john.doe@example.com"> <!-- Optional: Email address -->
+        
+        <!-- Optional: Additional Fees -->
+        <input name="handlingFee" type="hidden" value="5.00"> <!-- Optional: Handling/service fee -->
+    </form>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<html>
+<head>
+    <title>PayGov Payment - Basic Example</title>
+</head>
+<body onload="document.form1.submit();">
+    <form name="form1" method="post" action="https://pay.paygov.us/api/postapi.aspx">
+        <!-- Required Fields -->
+        <input name="ttid" type="hidden" value="YOUR_TTID"> <!-- Required: Transaction Type ID -->
+        <input name="apipassword" type="hidden" value="YOUR_API_PASSWORD"> <!-- Required: API Password -->
+        <input name="paymentAmount" type="hidden" value="100.00"> <!-- Required: Payment Amount -->
+        <input name="successURL" type="hidden" value="https://youragency.example.gov/success"> <!-- Required: Success URL -->
+        <input name="orderToken" type="hidden" value="ORDER-2025-0001"> <!-- Optional but recommended: Your tracking token -->
+    </form>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<html>
+<head>
+    <title>PayGov Payment - With Custom Fields</title>
+</head>
+<body onload="document.form1.submit();">
+    <form name="form1" method="post" action="https://pay.paygov.us/api/postapi.aspx">
+        <!-- Required Fields -->
+        <input name="ttid" type="hidden" value="YOUR_TTID"> <!-- Required: Transaction Type ID -->
+        <input name="apipassword" type="hidden" value="YOUR_API_PASSWORD"> <!-- Required: API Password -->
+        <input name="paymentAmount" type="hidden" value="100.00"> <!-- Required: Payment Amount -->
+        <input name="successURL" type="hidden" value="https://youragency.example.gov/success"> <!-- Required: Success URL -->
+        <input name="orderToken" type="hidden" value="TEST-TOKEN"> <!-- Optional but recommended: Your tracking token -->
+        
+        <!-- Optional: Customer Information -->
+        <input name="FirstName" type="hidden" value="John"> <!-- Optional: Customer first name -->
+        <input name="LastName" type="hidden" value="Doe"> <!-- Optional: Customer last name -->
+        <input name="Address1" type="hidden" value="123 Test Drive"> <!-- Optional: Street address -->
+        <input name="City" type="hidden" value="Indianapolis"> <!-- Optional: City -->
+        <input name="ZipCode" type="hidden" value="46062"> <!-- Optional: ZIP code -->
+        <input name="Phone" type="hidden" value="9999999999"> <!-- Optional: Phone number -->
+        
+        <!-- Custom Fields Using F- Prefix (Direct Transaction Form Entity ID) -->
+        <!-- F-<id> sends value directly without changing required status -->
+        <input name="F-28731" type="hidden" value="Melissa Tester"> <!-- Form field that goes with ttid -->
+        <input name="F-28732" type="hidden" value="564 Test Ave"> <!-- Form field that goes with ttid -->
+        
+        <!-- Custom Fields Using CP- Prefix (Custom Optional Field) -->
+        <!-- CP-<formEntityId> marks the field as optional and uses form entity ID -->
+        <input name="CP-519" type="hidden" value="Jane Doe"> <!-- Custom optional field: Patient Name -->
+        <input name="CP-515" type="hidden" value="Robert"> <!-- Custom optional field: Customer Name -->
+        
+        <!-- Custom Fields Using CPR- Prefix (Custom Required Field) -->
+        <!-- CPR-<formEntityId> marks the field as required and uses form entity ID -->
+        <input name="CPR-524" type="hidden" value="45645"> <!-- Custom optional field: Account Number -->
+    </form>
+</body>
+</html>
