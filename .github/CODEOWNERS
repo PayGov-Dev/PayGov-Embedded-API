@@ -1,0 +1,11 @@
+# PayGov Embedded API Code Owners
+# These owners will be automatically requested for review when someone opens a pull request.
+
+# All files in the repository
+* @PayGov-Dev/your-team-name
+
+# Documentation files specifically
+*.md @PayGov-Dev/documentation-team
+
+# Example files
+/examples/ @PayGov-Dev/integration-team
