@@ -42,8 +42,8 @@ The examples in this repository are static HTML files with hardcoded credentials
 ### Test vs Production Credentials
 | Parameter | Description | Example Values |
 |-----------|-------------|----------------|
-| `ttid` | Transaction Type ID | Test: `12345` / Production: Assigned by PayGov |
-| `apipassword` | API Password | Test: `TEST_PASSWORD_123` / Production: Contact PayGov support |
+| `ttid` | Transaction Type ID | Test: `19567` / Production: Assigned by PayGov |
+| `apipassword` | API Password | Test: `5fY6AF32` / Production: Contact PayGov support |
 
 > **Security Note**: Store HTML files with production credentials securely. Do not share production credentials publicly or commit them to public source control.
 
@@ -99,7 +99,7 @@ You can transmit arbitrary custom payment form data tied to your transaction typ
 ### How the Server Processes These
 1. Iterates all posted keys matching `(^F-)|(^CP-)|(^CPR-)`.  
 2. Strips the prefix to obtain a numeric identifier.  
-3. For `CP-` / `CPR-`: Looks up the matching row in `vw_FormFields` by `formentityid`. Converts to the corresponding `transactionformentityid`.  
+3. For `CP-` / `CPR-`: Looks up the matching row for `formentityid`. Converts to the corresponding `transactionformentityid`.  
 4. Toggles the field's `required` flag in the database if prefix demands change.  
 5. Adds an entry to an internal sorted list (`Session["API_Value"]`) keyed by `transactionformentityid` with the posted value.  
 6. If a posted key does not map cleanly and is truly new, the system attempts to create a new payment form field (`AddPaymentFormField`).
