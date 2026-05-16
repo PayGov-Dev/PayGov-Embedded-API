@@ -1,8 +1,10 @@
-# PayGov POST API - Documentation & Examples
+# PayGov Payment Integrations - Documentation & Examples
 
-> **Integrate PayGov payment processing using server-side form submission**
+> **Integrate PayGov payment processing using POST API or PayGov Secure**
 
-This repository provides comprehensive documentation and working code examples for integrating the PayGov POST API into your application.
+This repository provides documentation and examples for two PayGov integration methods:
+- POST API (HTML form POST pattern)
+- PayGov Secure (OAuth-based vendor configuration)
 
 ---
 
@@ -31,15 +33,21 @@ This repository provides comprehensive documentation and working code examples f
 
 ## 💡 How It Works
 
-### The Integration Pattern
+### Choose Your Integration Method
 
-All PayGov integrations use this HTML POST pattern:
-
+#### Method 1: POST API (HTML Form POST)
 1. **Edit the HTML file** - Fill in your `ttid`, `apipassword`, and payment details
 2. **User opens the file** - Double-click the .html file
 3. **Form auto-submits** - Page loads and immediately submits to PayGov
 4. **PayGov collects payment** - User enters payment information securely
 5. **User redirected back** - After payment, user returns to your `successURL`
+
+#### Method 2: PayGov Secure (OAuth Vendor Configuration)
+1. **Configure vendor in back-office** - Go to `Administration > Financial Setup > Payment Vendors`
+2. **Add vendor** - Click `Add Back Office Vendor` or `Add Portal Vendor`
+3. **Select vendor type** - Choose `PayGov Secure`
+4. **Enter 6 required parameters** - Vendor URL, Transaction Type ID, Token URL, Scope, Client ID, Client Secret
+5. **Use configured vendor** - Submit payments through the configured PayGov Secure flow
 
 ### Example
 
@@ -105,6 +113,32 @@ These examples are static HTML files that users open directly:
 - Post HTML files with real credentials to public websites
 - Allow untrusted users to modify payment amounts
 
+---
+
+## ⚙️ PayGov Secure Configuration
+
+To configure the PayGov Secure integration, configure the payment vendor as follows:
+
+1. In the back-office side menu, go to `Administration > Financial Setup > Payment Vendors`.
+2. On the Payment Vendor list page click `Add Back Office Vendor`, or `Add Portal Vendor`, depending on whether you want to enable the payment vendor for back-office or portal payments.
+3. The `Configure Payment Vendor` dialog appears. Select `PayGov Secure` from the `Select Vendor` dropdown.
+4. Enter the parameter values for the jurisdiction.
+
+### Required Parameters (6)
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| Vendor URL | `https://qa-pay.paygov.us/api/securepost.aspx` | Same for all jurisdictions |
+| Transaction Type ID | Unique per client | Provided by PayGov |
+| Token URL | `https://login.microsoftonline.com/60446fdc-fc00-4089-aa2ed8670a2cc5f7/oauth2/v2.0/token` | Same for all jurisdictions |
+| Scope | Unique per client | Provided by PayGov |
+| Client ID | Unique per client | Provided by PayGov |
+| Client Secret | Unique per client | Provided by PayGov |
+
+For questions about a client's parameter values or other client-specific issues, email Cal at PayGov: `cal@paygov.us`.
+
+Note: The HTML files in `examples/` demonstrate the POST API method and are not templates for the PayGov Secure vendor configuration.
+
 
 ---
 
@@ -115,6 +149,9 @@ Contact PayGov Integration Support to obtain:
 - **API Password** (`apipassword`)
 - **Test credentials** (for testing)
 - **Production credentials** (for live payments)
+- **PayGov Secure Scope** (for Secure method)
+- **PayGov Secure Client ID** (for Secure method)
+- **PayGov Secure Client Secret** (for Secure method)
 
 ---
 
@@ -125,6 +162,10 @@ Contact PayGov Integration Support to obtain:
 Endpoint: https://qa-pay.paygov.us/API/PostAPI.aspx
 Credentials: Contact PayGov for test ttid and apipassword
 ```
+
+PayGov Secure fixed URLs:
+- Vendor URL: https://qa-pay.paygov.us/api/securepost.aspx
+- Token URL: https://login.microsoftonline.com/60446fdc-fc00-4089-aa2ed8670a2cc5f7/oauth2/v2.0/token
 
 ### Production
 ```

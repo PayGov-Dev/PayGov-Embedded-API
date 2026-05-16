@@ -1,8 +1,9 @@
-# PayGov POST API Integration Guide
+# PayGov Payment Integration Guide
 
-> Version: 2.0 (Expanded)  
-> Endpoint: `https://pay.paygov.us/api/postapi.aspx`  
-> Purpose: Seamlessly hand off non-sensitive payment context from your site to PayGov so we can securely collect card/bank details, process the payment, then return you to a success (or user-selected cancel) page.
+> Version: 2.1 (POST API + PayGov Secure)  
+> POST API Endpoint: `https://pay.paygov.us/api/postapi.aspx`  
+> PayGov Secure Vendor URL: `https://qa-pay.paygov.us/api/securepost.aspx`  
+> Purpose: Integrate PayGov payments using either the classic POST API flow or the PayGov Secure OAuth-based vendor configuration flow.
 
 ---
 ## 1. High-Level Flow
@@ -46,6 +47,34 @@ The examples in this repository are static HTML files with hardcoded credentials
 | `apipassword` | API Password | Test: `5fY6AF32` / Production: Contact PayGov support |
 
 > **Security Note**: Store HTML files with production credentials securely. Do not share production credentials publicly or commit them to public source control.
+
+---
+## 3B. PayGov Secure Vendor Configuration (OAuth-Based)
+
+PayGov Secure is configured in back-office vendor administration and uses OAuth credentials rather than `apipassword` in static HTML.
+
+### Configuration Notes
+There are 6 required parameter values needed to configure the PayGov Secure payment vendor. The Vendor URL and Token URL are the same for all jurisdictions; the other 4 values are unique for each jurisdiction.
+
+For questions about a client's parameter values or other client-specific issues, email Cal at PayGov: `cal@paygov.us`.
+
+| Parameter | Value | Jurisdiction-Specific |
+|-----------|-------|------------------------|
+| Vendor URL | `https://qa-pay.paygov.us/api/securepost.aspx` | No |
+| Transaction Type ID | Provided per client | Yes |
+| Token URL | `https://login.microsoftonline.com/60446fdc-fc00-4089-aa2ed8670a2cc5f7/oauth2/v2.0/token` | No |
+| Scope | Provided per client | Yes |
+| Client ID | Provided per client | Yes |
+| Client Secret | Provided per client | Yes |
+
+### Back-Office Setup Steps
+1. In the back-office side menu, go to `Administration > Financial Setup > Payment Vendors`.
+2. On the Payment Vendor list page click `Add Back Office Vendor`, or `Add Portal Vendor`, depending on whether you want to enable the payment vendor for back-office or portal payments.
+3. In the `Configure Payment Vendor` dialog, select `PayGov Secure` from the `Select Vendor` dropdown. The dialog will display 6 parameters in the Vendor Configuration section.
+4. Enter the jurisdiction's parameter values. Vendor URL and Token URL are shared across jurisdictions, while Transaction Type ID, Scope, Client ID, and Client Secret are client-specific.
+
+### Method Separation
+Use this section only for PayGov Secure vendor setup. The rest of this document (including `ttid` + `apipassword` examples) describes the POST API method.
 
 ---
 ## 4. Required Core Parameters
@@ -215,6 +244,7 @@ Contact PayGov integration support to request a test `ttid` and `apipassword`.
 ## 14. Change Log (Documentation)
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.1 | 2026-05-16 | Added PayGov Secure OAuth vendor configuration section with required parameters and back-office setup steps. |
 | 2.0 | 2025-11-02 | Expanded guide, added prefixes, examples, security, known issues. |
 | 1.0 | (Previous) | Minimal field table only. |
 
@@ -229,8 +259,14 @@ Contact PayGov integration support to request a test `ttid` and `apipassword`.
 
 ---
 ## 16. Support
-For provisioning `ttid`, `apipassword`, or troubleshooting logs, contact PayGov integration support with the `orderToken` and `OrderId` values.
+For provisioning `ttid`, `apipassword`, Transaction Type ID, Scope, Client ID, Client Secret, or troubleshooting logs, contact PayGov integration support with the `orderToken` and `OrderId` values.
+
+For client-specific PayGov Secure parameter questions, email Cal at PayGov: `cal@paygov.us`.
 
 ---
 ## 17. Summary
-Implement the POST with required core fields, optionally enrich with payer context and dynamic form fields. Handle the success redirect to finalize your internal records. Pay special attention to case-sensitive field names and current quirks listed above.
+Choose the method that matches your implementation model:
+- POST API: Implement the form POST with required core fields, optional payer context, and dynamic form fields.
+- PayGov Secure: Configure the back-office vendor with the 6 required parameters and OAuth credentials.
+
+For both methods, validate credentials carefully and use PayGov support channels for jurisdiction-specific provisioning details.
