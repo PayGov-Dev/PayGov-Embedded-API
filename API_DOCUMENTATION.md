@@ -62,7 +62,7 @@ For questions about a client's parameter values or other client-specific issues,
 |-----------|-------|------------------------|
 | Vendor URL | `https://qa-pay.paygov.us/api/securepost.aspx` | No |
 | Transaction Type ID | Provided per client | Yes |
-| Token URL | `https://login.microsoftonline.com/60446fdc-fc00-4089-aa2ed8670a2cc5f7/oauth2/v2.0/token` | No |
+| Token URL | `https://login.microsoftonline.com/60446fdc-fc00-4089-aa2e-d8670a2cc5f7/oauth2/v2.0/token` | No |
 | Scope | Provided per client | Yes |
 | Client ID | Provided per client | Yes |
 | Client Secret | Provided per client | Yes |

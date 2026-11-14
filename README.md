@@ -130,7 +130,7 @@ To configure the PayGov Secure integration, configure the payment vendor as foll
 |-----------|-------|-------|
 | Vendor URL | `https://qa-pay.paygov.us/api/securepost.aspx` | Same for all jurisdictions |
 | Transaction Type ID | Unique per client | Provided by PayGov |
-| Token URL | `https://login.microsoftonline.com/60446fdc-fc00-4089-aa2ed8670a2cc5f7/oauth2/v2.0/token` | Same for all jurisdictions |
+| Token URL | `https://login.microsoftonline.com/60446fdc-fc00-4089-aa2e-d8670a2cc5f7/oauth2/v2.0/token` | Same for all jurisdictions |
 | Scope | Unique per client | Provided by PayGov |
 | Client ID | Unique per client | Provided by PayGov |
 | Client Secret | Unique per client | Provided by PayGov |
@@ -165,7 +165,7 @@ Credentials: Contact PayGov for test ttid and apipassword
 
 PayGov Secure fixed URLs:
 - Vendor URL: https://qa-pay.paygov.us/api/securepost.aspx
-- Token URL: https://login.microsoftonline.com/60446fdc-fc00-4089-aa2ed8670a2cc5f7/oauth2/v2.0/token
+- Token URL: https://login.microsoftonline.com/60446fdc-fc00-4089-aa2e-d8670a2cc5f7/oauth2/v2.0/token
 
 ### Production
 ```
