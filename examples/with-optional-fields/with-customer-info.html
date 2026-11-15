@@ -1,15 +1,16 @@
 <html>
 <head>
-    <title>PayGov Payment - With Customer Information</title>
+    <title>PayGov Classic POST Compatibility Example - Customer Information</title>
 </head>
 <body onload="document.form1.submit();">
-    <form name="form1" method="post" action="https://pay.paygov.us/api/postapi.aspx">
+    <!-- Compatibility example only: this browser form exposes apipassword. Use PayGov Secure for new integrations. -->
+    <form name="form1" method="post" action="https://qa-pay.paygov.us/API/PostAPI.aspx">
         <!-- Required Fields -->
-        <input name="ttid" type="hidden" value="YOUR_TTID"> <!-- Required: Transaction Type ID -->
-        <input name="apipassword" type="hidden" value="YOUR_API_PASSWORD"> <!-- Required: API Password -->
-        <input name="paymentAmount" type="hidden" value="150.00"> <!-- Required: Payment Amount -->
+        <input name="ttid" type="hidden" value="YOUR_TEST_TTID"> <!-- Required: Transaction Type ID -->
+        <input name="apipassword" type="hidden" value="YOUR_TEST_API_PASSWORD"> <!-- Required: API Password -->
+        <input name="paymentAmount" type="hidden" value="YOUR_TEST_AMOUNT"> <!-- Required: Payment Amount -->
         <input name="successURL" type="hidden" value="https://youragency.example.gov/success"> <!-- Required: Success URL -->
-        <input name="orderToken" type="hidden" value="ORDER-2025-0002"> <!-- Optional but recommended: Your tracking token -->
+        <input name="orderToken" type="hidden" value="YOUR_ORDER_TOKEN"> <!-- Optional: Your tracking token -->
         
         <!-- Optional: Cancel URL -->
         <input name="CancelURL" type="hidden" value="https://youragency.example.gov/cancel"> <!-- Optional: Cancel URL -->
