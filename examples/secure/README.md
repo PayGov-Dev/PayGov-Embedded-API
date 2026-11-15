@@ -45,6 +45,8 @@ The additional-field name above is an **invalid placeholder**, not a PayGov fiel
 
 Use string amounts with two decimal places and validate your business rules on a trusted server. The example accepts positive amounts representable in safe whole cents; confirm decimal formatting and the test amount with PayGov in QA.
 
+For `orderToken`, supply a reference saved against your order before checkout. The local demo generates a UUID per click but does not persist it; replace that demonstration behavior with your application's saved reference. See [order tracking and token distinctions](../../API_DOCUMENTATION.md#tracking-your-order-with-ordertoken).
+
 ## Boundaries
 
 Keep credentials and access tokens on the server. Handle checkout failures as errors, not payment success. A return to your HTTPS page is informational; [authoritative payment-status access](../../API_DOCUMENTATION.md#payment-results) must be arranged separately.

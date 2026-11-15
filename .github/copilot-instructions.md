@@ -54,6 +54,7 @@ Both handlers process the initial request inside `if (!IsPostBack)`. This is an 
 
 ## PayGov-confirmed integration guidance
 
+- PayGov directs customer integrations to omit the unused `handlingFee` field. Keep it out of developer-facing field tables and examples; the supplied handler's parsing remains source-reference information, not a recommended integration field.
 - Secure uses the client credentials grant. The client server obtains the token and sends it in `AccessToken`; the payer's browser should receive neither the client secret nor the access token. This is client integration guidance, not a boundary the SecurePost handler enforces.
 - Production Secure URL: `https://pay.paygov.us/api/securepost.aspx`; QA Secure URL: `https://qa-pay.paygov.us/api/securepost.aspx`. Other provisioning values remain client/environment-specific; use the existing setup reference instead of inventing values.
 - The client server captures PayGov's redirect without automatically following it, resolves a relative `Location` against the endpoint URL, verifies the HTTPS PayGov origin and expected payment-page destination, then redirects the browser. A location-code/error destination must not be presented as a successful checkout.

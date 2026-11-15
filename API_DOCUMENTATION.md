@@ -86,15 +86,29 @@ These names are the documented spelling for both methods. ASP.NET request lookup
 | `successURL` | Both | Your HTTPS browser-return URL |
 | `AccessToken` | Secure only | Access token obtained server-side |
 | `apipassword` | Classic POST only | Password provisioned for the submitted TID |
-| `orderToken` | Optional, both | Your order-correlation value; not an idempotency guarantee |
+| `orderToken` | Optional, both | Your saved order or payment-attempt reference; see [tracking your order](#tracking-your-order-with-ordertoken) |
 | `CancelURL` | Optional, both | Cancellation-return URL stored for downstream processing |
 | `FirstName`, `LastName` | Optional, both | Payer name |
 | `Address1`, `City`, `State`, `ZipCode` | Optional, both | Payer address |
 | `Phone`, `Email` | Optional, both | Payer contact details |
-| `ShippingAmount`, `handlingFee` | Optional, both | Independently parsed fee values passed separately to storage; downstream fee handling is not established by these handlers |
+| `ShippingAmount` | Optional, both | Shipping component passed to storage; downstream fee handling is not established by these handlers |
 | TID-specific fields | As supplied by PayGov | See [fields for your Transaction Type](FORM_ENTITY_REFERENCE.md) |
 
-**Client safeguards:** validate required values, amounts, and return URLs on a trusted server. The handlers check required-field presence, not non-empty values; invalid `paymentAmount` parsing becomes zero. Decimal parsing uses the server's current culture, so confirm your amount format in QA. Invalid optional fee parsing leaves that value unset.
+**Client safeguards:** validate required values, amounts, and return URLs on a trusted server. The handlers check required-field presence, not non-empty values; invalid `paymentAmount` parsing becomes zero. Decimal parsing uses the server's current culture, so confirm your amount format in QA. Invalid `ShippingAmount` parsing leaves it unset.
+
+### Tracking Your Order with `orderToken`
+
+`orderToken` is an optional string **your application supplies** to connect the PayGov payment request to an order, invoice, or payment attempt in your own system. PayGov does not generate it for you; both integration methods pass it to storage for downstream processing.
+
+For example, send `orderToken=YOUR_STORED_PAYMENT_REFERENCE` alongside the payment fields. In your application:
+
+1. Create an opaque payment-attempt reference, or use an existing order reference, and save its relationship to your order **before** submitting checkout.
+2. Send that saved value as `orderToken`. A UUID is suitable if you save it against the order; a freshly generated value with no saved relationship cannot help you reconcile the payment.
+3. If it appears in a browser return, use it only to locate your order. Confirm payment through the authenticated status/report lookup using the correlation instructions supplied by PayGov.
+
+It is not the `ttid` (payment type), `postToken` (PayGov's checkout token), or `AccessToken` (authentication token). It is also **not an idempotency key**: the supplied handlers do not enforce uniqueness or prevent duplicate payment requests when a value is reused.
+
+**Client safeguard:** use a non-sensitive reference, not names, email addresses, card details, or credentials; a downstream browser return may expose it. The initial handlers do not define a guaranteed return-query format.
 
 ## Payment Results
 
