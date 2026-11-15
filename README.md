@@ -11,6 +11,14 @@ Integrate your application with PayGov's hosted checkout. Your application suppl
 | PayGov Secure | New integrations using server-side Microsoft Entra authentication | [Secure quickstart](API_DOCUMENTATION.md#paygov-secure-quickstart) |
 | Classic POST | Maintaining an existing shared-password integration | [Compatibility guide](API_DOCUMENTATION.md#classic-post-compatibility) |
 
+## What Is a TTID?
+
+A **Transaction Type ID**, also called a **TID** or **TTID**, is a number PayGov assigns to a configured payment type for your agency. Send it in the `ttid` request field so PayGov knows which payment setup and form to use.
+
+For example, an agency may have one TTID for utility payments and another for permit fees. Each can have different [form fields supplied by PayGov](FORM_ENTITY_REFERENCE.md). Use the TTID provided for your payment type and environment; do not choose your own.
+
+A TTID identifies the **type of payment**, not an individual payment or order. It is not a password or a substitute for authentication.
+
 ## Before You Start
 
 Contact PayGov Integration Support through your established support channel to obtain your environment-specific setup values:
@@ -20,6 +28,27 @@ Contact PayGov Integration Support through your established support channel to o
 - The exact form fields and requirements supplied for your TID.
 
 Begin in QA. Production access and credentials are provisioned separately.
+
+## How Secure Checkout Works
+
+Your server authenticates and starts checkout; the payer's browser opens PayGov's payment page.
+
+```mermaid
+sequenceDiagram
+    participant Browser as Payer's browser
+    participant Server as Your server
+    participant Entra as Microsoft Entra ID
+    participant PayGov as PayGov
+    Browser->>Server: Start payment
+    Server->>Entra: Request token using client credentials
+    Entra-->>Server: Access token
+    Server->>PayGov: Submit token, ttid, amount, and payment fields
+    PayGov-->>Server: Checkout redirect Location
+    Server-->>Browser: Redirect to verified PayGov checkout URL
+    Browser->>PayGov: Open checkout and enter payment details
+```
+
+The client secret and access token stay on the server. Opening the payment page is not confirmation that a payment succeeded.
 
 ## Integration Steps
 

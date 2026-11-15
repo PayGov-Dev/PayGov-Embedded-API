@@ -64,7 +64,7 @@ Both integration methods use an HTTPS form-encoded POST. Use QA for development 
 
 | Setup value | Purpose |
 |-------------|---------|
-| Transaction Type ID (`ttid`) | PayGov-provisioned payment scenario for your integration and environment |
+| Transaction Type ID (`ttid`) | Your assigned payment type and environment; see [what a TTID is](README.md#what-is-a-ttid) |
 | Token URL (Secure) | `https://login.microsoftonline.com/60446fdc-fc00-4089-aa2e-d8670a2cc5f7/oauth2/v2.0/token` |
 | Scope (Secure) | PayGov-provided resource scope |
 | Client ID (Secure) | Your provisioned Entra client identifier |
