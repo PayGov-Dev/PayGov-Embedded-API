@@ -20,19 +20,9 @@
         <input name="ZipCode" type="hidden" value="46062"> <!-- Optional: ZIP code -->
         <input name="Phone" type="hidden" value="9999999999"> <!-- Optional: Phone number -->
         
-        <!-- Custom Fields Using F- Prefix (Direct Transaction Form Entity ID) -->
-        <!-- F-<id> sends value directly without changing required status -->
-        <input name="F-28731" type="hidden" value="Melissa Tester"> <!-- Form field that goes with ttid -->
-        <input name="F-28732" type="hidden" value="564 Test Ave"> <!-- Form field that goes with ttid -->
-        
-        <!-- Custom Fields Using CP- Prefix (Custom Optional Field) -->
-        <!-- CP-<formEntityId> marks the field as optional and uses form entity ID -->
-        <input name="CP-519" type="hidden" value="Jane Doe"> <!-- Custom optional field: Patient Name -->
-        <input name="CP-515" type="hidden" value="Robert"> <!-- Custom optional field: Customer Name -->
-        
-        <!-- Custom Fields Using CPR- Prefix (Custom Required Field) -->
-        <!-- CPR-<formEntityId> marks the field as required and uses form entity ID -->
-        <input name="CPR-524" type="hidden" value="45645"> <!-- Custom optional field: Account Number -->
+        <!-- Replace both placeholders with the exact field name and value supplied by PayGov for your test TID. -->
+        <!-- Add one input per supplied field; these placeholders are not valid PayGov request names. -->
+        <input name="YOUR_PAYGOV_SUPPLIED_FIELD_NAME" type="hidden" value="YOUR_FIELD_VALUE">
     </form>
 </body>
 </html>

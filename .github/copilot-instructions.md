@@ -8,6 +8,7 @@ This repository contains integration documentation and classic POST HTML example
 - The `.aspx` files contain page declarations and empty content/form markup. Request handling lives in their code-behind files, not in the markup.
 - Separate **implemented behavior**, **PayGov-confirmed integration guidance**, and **recommended client safeguards**. Endpoint source alone does not prove client behavior, deployed configuration, downstream payment completion, or telemetry sanitization.
 - Preserve the simple developer-reference scope: recommend Secure for new integrations and retain classic POST for backward compatibility. Keep code examples credential-free, with placeholders and QA endpoints.
+- In developer-facing guides, explain that form fields vary by Transaction Type ID (TID, sent as `ttid`) and that PayGov supplies exact field names, requirements, and formats individually. Treat supplied names as opaque: clients copy them rather than choose IDs or interpret prefixes. Keep the implementation details below as authoring reference, not onboarding material; examples use placeholders instead of reusable field-ID catalogs.
 
 ## Request processing reference
 

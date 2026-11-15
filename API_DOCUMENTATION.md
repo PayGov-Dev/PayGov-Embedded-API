@@ -11,7 +11,7 @@
 2. User opens the HTML file.  
 3. Form auto-submits immediately using `onload="document.form1.submit();"`.  
 4. PayGov validates required fields and the API password (`apipassword`).  
-5. Dynamic custom form fields (prefixed `F-`, `CP-`, `CPR-`) are parsed and stored; required/optional flags can be toggled using prefixes.  
+5. Include the form fields PayGov supplied for your Transaction Type ID (`ttid`).
 6. User is redirected to a hosted PayGov payment page (`PaymentAgency.aspx`) to enter secure payment details.  
 7. On successful payment PayGov redirects the browser to your `successURL` with query string values. If the user cancels, they may be returned to your `CancelURL` (if provided).  
 8. Use returned identifiers such as `OrderId` and `orderToken` for correlation only; verify live payment status through PayGov's authenticated status/report lookup.
@@ -89,7 +89,7 @@ The client server obtains an access token from the configured Microsoft Entra to
 | `orderToken` | No | Client's correlation value returned to the client |
 | `FirstName`, `LastName`, `Address1`, `City`, `State`, `ZipCode`, `Phone`, `Email` | No | Optional payer details |
 | `ShippingAmount`, `handlingFee` | No | Optional fee fields; handling behavior is shared with the classic POST implementation |
-| `F-<id>`, `CP-<id>`, `CPR-<id>` | No | Optional form fields; see [Dynamic Custom Form Fields](#6-dynamic-custom-form-fields) |
+| TID-specific form fields | As supplied by PayGov | Exact names, values, and requirements are supplied individually for your `ttid`; see [Form Fields](#6-form-fields-for-your-transaction-type) |
 
 PayGov validates the token, stores the payment request, and responds with a redirect to its hosted payment page. The client server must forward PayGov's `Location` to the payer's browser as a redirect. Do not follow the redirect server-side and return the payment page as a client response, and do not forward `AccessToken` or `ClientSecret` to the browser.
 
@@ -136,33 +136,15 @@ If supplied, these are stored with the payment request and can pre-fill or conte
 > Important: Do NOT rely on `handlingFee` and `ShippingAmount` both persisting independently. Post one unified fee until code is updated.
 
 ---
-## 6. Dynamic Custom Form Fields
-You can transmit arbitrary custom payment form data tied to your transaction type. Three naming prefixes control behavior:
+## 6. Form Fields for Your Transaction Type
 
-| Prefix | Pattern | Purpose | Required Handling |
-|--------|---------|---------|-------------------|
-| `F-` | `F-<id>` | Send value for an existing transaction form entity using its internal transaction form entity ID directly. | Does NOT toggle required flag. |
-| `CP-` | `CP-<formEntityId>` | Send value for a custom (optional) field referencing its form entity ID (not transaction form entity ID). | Forces field to optional if currently required. |
-| `CPR-` | `CPR-<formEntityId>` | Send value and mark field as required. | Forces required if currently optional. |
+Form fields are different for each Transaction Type ID (TID), sent as `ttid`. PayGov supplies the exact field names, required values, and format requirements individually for your TID.
 
-> **📖 Looking for available Form Entity IDs?** See [FORM_ENTITY_REFERENCE.md](FORM_ENTITY_REFERENCE.md) for a comprehensive list of 100+ common form fields you can use with `CP-` and `CPR-` prefixes.
+Send these fields alongside the standard payment parameters using the names exactly as supplied. There is no universal field list to choose from, and you do not need to construct or interpret field names.
 
-### How the Server Processes These
-1. Iterates all posted keys matching `(^F-)|(^CP-)|(^CPR-)`.  
-2. Strips the prefix to obtain a numeric identifier.  
-3. For `CP-` / `CPR-`: Looks up the matching row for `formentityid`. Converts to the corresponding `transactionformentityid`.  
-4. Toggles the field's `required` flag in the database if prefix demands change.  
-5. Adds an entry to an internal value list keyed by `transactionformentityid`; the API post data service persists it with the payment request.
-6. If a posted key does not map cleanly and is truly new, the system attempts to create a new payment form field (`AddPaymentFormField`).
+Use only your assigned fields. Changing field names or required status can affect the payment form's configuration; contact PayGov Integration Support for any additions or changes.
 
-> Caution: Posting a truly new numeric id with `CP-` / `CPR-` that does not exist may trigger an attempt to create it; malformed or empty identifiers could cause exceptions (not surfaced cleanly). Validate IDs on your side.
-
-### Special Auto-Mapped Fallbacks
-If you include values for:
-* `F-20430`: Used to backfill any field whose display name contains "Account" if not already supplied.
-* `F-11917`: Used to backfill any field whose display name contains "Permit" if not already supplied.
-
-These are legacy convenience mappings; prefer direct field posts with the correct IDs.
+See [Form Fields for Your Transaction Type](FORM_ENTITY_REFERENCE.md).
 
 ---
 ## 7. Redirect on Success
@@ -220,13 +202,13 @@ This repository contains classic POST compatibility examples:
 examples/
 ├── basic/                          # Minimal required fields only
 ├── with-optional-fields/           # Payment with customer information
-└── with-custom-fields/             # Payment with dynamic custom fields
+└── with-custom-fields/             # Payment with TID-specific form fields
 ```
 
 ### Quick Links to Examples
 - [Basic classic POST form](examples/basic/) - Compatibility example (4 required fields)
 - [Payment with Customer Info](examples/with-optional-fields/) - Including name, address, email
-- [Payment with Custom Fields](examples/with-custom-fields/) - Using F-, CP-, CPR- prefixes
+- [Payment with Form Fields](examples/with-custom-fields/) - Add the fields supplied for your TID
 
 The examples use placeholder credentials and target the QA endpoint. They auto-submit a browser form, which exposes the classic API password to the browser. Do not use this pattern for a new public-facing integration.
 
@@ -239,13 +221,12 @@ See the linked API documentation sections for field explanations.
 | Inconsistent field-name capitalization in the implementation | The server accesses password and success URL using different capitalization in validation and later reads. | Use the documented field names exactly; do not depend on other casing variants. |
 | `handlingFee` overwrites `ShippingAmount` | Cannot store both values simultaneously. | Consolidate fees and send only one. |
 | `Address1` read twice | No functional impact; redundant code. | Ignore. |
-| Dynamic field creation error risk | Empty or non-numeric IDs could cause server errors. | Validate IDs; avoid posting empty prefixes. |
-| Required flag flips in database | Posting with `CP-` or `CPR-` changes persistence of required status globally for the transaction type. | Use with caution; coordinate with PayGov administrators. |
+| Unassigned or modified form fields | May fail processing or change the payment form's configuration. | Send only the exact fields supplied by PayGov for your TID; coordinate changes with PayGov Support. |
 
 ---
 ## 13. FAQ
 **Q: Can I post multiple line items?**  
-Aggregate them into `paymentAmount` before posting; optionally send descriptive custom fields (`CP-` / `CPR-`).
+Aggregate them into `paymentAmount` before posting; include any additional form fields supplied by PayGov for your TID.
 
 **Q: How do I know a live payment truly succeeded?**
 The browser return and its `OrderId` are informational, not authoritative confirmation. Use PayGov's authenticated status/report lookup. Ask PayGov Integration Support for the access and correlation steps available to your account.

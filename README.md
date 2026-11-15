@@ -12,7 +12,7 @@ Use **PayGov Secure for new integrations**. It uses a server-to-server POST with
 
 **Maintaining a classic POST integration?** → Browse the [compatibility examples](examples/)
 
-**Example Form Entities** → See [FORM_ENTITY_REFERENCE.md](FORM_ENTITY_REFERENCE.md)
+**Fields for your transaction type** → See [Form Fields](FORM_ENTITY_REFERENCE.md)
 
 ---
 
@@ -20,12 +20,12 @@ Use **PayGov Secure for new integrations**. It uses a server-to-server POST with
 
 ### Documentation Files
 - **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - Complete technical API reference
-- **[FORM_ENTITY_REFERENCE.md](FORM_ENTITY_REFERENCE.md)** - 100+ common form field IDs for custom fields
+- **[Form Fields](FORM_ENTITY_REFERENCE.md)** - How to send the fields PayGov supplies for your Transaction Type ID (`ttid`)
 
 ### Code Examples
 - **[basic/](examples/basic/)** - Minimal integration (4 required fields)
 - **[with-optional-fields/](examples/with-optional-fields/)** - With customer information
-- **[with-custom-fields/](examples/with-custom-fields/)** - With dynamic fields (F-, CP-, CPR-)
+- **[with-custom-fields/](examples/with-custom-fields/)** - With form fields supplied for your TID
 
 ---
 
@@ -59,7 +59,7 @@ See the [classic POST API reference](API_DOCUMENTATION.md#2-endpoint--method) an
 |---------------|-------------|
 | Existing classic POST integration | [basic compatibility example](examples/basic/) |
 | Collect customer information | [with-optional-fields/](examples/with-optional-fields/) |
-| Dynamic custom fields | [with-custom-fields/](examples/with-custom-fields/) |
+| Fields supplied for your TID | [Form Fields](FORM_ENTITY_REFERENCE.md) |
 
 ---
 
@@ -121,7 +121,7 @@ For jurisdiction-specific values, contact PayGov Integration Support through you
 
 ### Secure Request and Redirect
 
-The client server POSTs `AccessToken`, `ttid`, `SuccessURL`, and `paymentAmount` to the configured Vendor URL. Optional fields include `CancelURL`, `orderToken`, payer details, `ShippingAmount`, `handlingFee`, and dynamic form fields with `F-`, `CP-`, or `CPR-` prefixes. The endpoint validates the access token against the configured Entra application ID and then redirects to PayGov's hosted payment page. The client server forwards PayGov's `Location` to the payer's browser. The browser must never receive the access token or client secret.
+The client server POSTs `AccessToken`, `ttid`, `SuccessURL`, and `paymentAmount` to the configured Vendor URL. Optional standard fields include `CancelURL`, `orderToken`, payer details, `ShippingAmount`, and `handlingFee`. Any additional form fields vary by TID; PayGov supplies their exact names and requirements individually. The endpoint validates the access token against the configured Entra application ID and then redirects to PayGov's hosted payment page. The client server forwards PayGov's `Location` to the payer's browser. The browser must never receive the access token or client secret.
 
 Sensitive request values and IdentityModel PII-enabled diagnostics are sanitized before PayGov production telemetry is stored.
 
@@ -140,6 +140,7 @@ Contact PayGov Integration Support to obtain:
 - **PayGov Secure Scope** (for Secure method)
 - **PayGov Secure Client ID** (for Secure method)
 - **PayGov Secure Client Secret** (for Secure method)
+- **Form field details for each TID** (exact names, required values, and formats)
 
 ---
 
@@ -196,7 +197,7 @@ Embeded_Post_Documentation/
     ├── README.md                  # Examples overview
     ├── basic/                     # Minimal integration
     ├── with-optional-fields/      # With customer info
-    └── with-custom-fields/        # With dynamic fields
+    └── with-custom-fields/        # With TID-specific form fields
 ```
 
 ---
@@ -267,7 +268,7 @@ The browser return is informational, not authoritative confirmation of a live pa
 3. Add error handling
 
 **Advanced** (2-4 hours)
-1. Implement [custom fields](examples/with-custom-fields/)
+1. Add the [form fields supplied for your TID](FORM_ENTITY_REFERENCE.md)
 2. Add logging and monitoring
 3. Deploy to production
 
@@ -296,7 +297,7 @@ Before going to production:
 - Get credentials (`ttid` and `apipassword`)
 - Request test environment access
 - Technical support and troubleshooting
-- Custom field ID mappings
+- Form fields supplied individually for each TID
 
 ---
 
