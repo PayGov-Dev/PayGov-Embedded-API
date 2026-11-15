@@ -1,267 +1,159 @@
-# PayGov Payment Integration Guide
+# PayGov Integration Reference
 
-> Version: 2.2 (POST API + PayGov Secure)
-> POST API Endpoint: `https://pay.paygov.us/api/postapi.aspx`  
-> PayGov Secure Vendor URL: `https://pay.paygov.us/api/securepost.aspx` (production)
-> Purpose: Integrate PayGov payments using either the classic POST API flow or the PayGov Secure OAuth-based vendor configuration flow.
+[Start here](README.md) | [Secure quickstart](#paygov-secure-quickstart) | [Request fields](#request-fields) | [Classic POST](#classic-post-compatibility) | [Support](#support)
 
----
-## 1. High-Level Flow (Classic POST)
-1. You create an HTML file with a form that POSTs to the PayGov endpoint.  
-2. User opens the HTML file.  
-3. Form auto-submits immediately using `onload="document.form1.submit();"`.  
-4. PayGov validates required fields and the API password (`apipassword`).  
-5. Include the form fields PayGov supplied for your Transaction Type ID (`ttid`).
-6. User is redirected to a hosted PayGov payment page (`PaymentAgency.aspx`) to enter secure payment details.  
-7. On successful payment PayGov redirects the browser to your `successURL` with query string values. If the user cancels, they may be returned to your `CancelURL` (if provided).  
-8. Use returned identifiers such as `OrderId` and `orderToken` for correlation only; verify live payment status through PayGov's authenticated status/report lookup.
+Both methods start PayGov-hosted checkout; neither initial request charges a card or confirms payment. Use Secure for new integrations and classic POST only for backward compatibility.
 
----
-## 2. Endpoint & Method
-| Property | Value |
-|----------|-------|
-| URL | `https://pay.paygov.us/api/postapi.aspx` |
-| Method | `POST` (standard HTML form post) |
-| Protocol | HTTPS only |
-| Encoding | URL form-encoded (`application/x-www-form-urlencoded`) |
+## PayGov Secure Quickstart
 
-### Environment Endpoints
-| Environment | Endpoint URL |
-|-------------|--------------|
-| **Production** | `https://pay.paygov.us/api/postapi.aspx` |
-| **Testing/QA** | `https://qa-pay.paygov.us/API/PostAPI.aspx` *(Contact PayGov support for test environment access)* |
+Secure uses Microsoft Entra OAuth 2.0 client credentials. Run the following steps on your application's server; keep the client secret and access token out of the payer's browser.
 
-> **Important**: Use the test environment for all development and integration testing. Production credentials (`ttid` and `apipassword`) are different from test credentials.
+### 1. Obtain Your Setup Values
 
----
-## 3. Authentication
-You must include the API password provided by PayGov. The code expects the field name `apipassword` (all lower-case). 
+Use the [setup reference](#endpoints-and-setup-values) and the environment-specific credentials provided by PayGov. Start in QA.
 
-### Implementation Note
-The examples in this repository are static HTML files with placeholder credentials that users open directly. Replacing the `apipassword` placeholder embeds the password in the HTML and exposes it to the browser.
+### 2. Acquire an Access Token
 
-### Test vs Production Credentials
-| Parameter | Description | Example Values |
-|-----------|-------------|----------------|
-| `ttid` | Transaction Type ID | Assigned by PayGov for each environment |
-| `apipassword` | API Password | Provisioned by PayGov; keep out of public docs and browser code |
+POST to the Token URL using `application/x-www-form-urlencoded`. These are illustrative HTTP requests, not executable browser forms. Replace URL labels and placeholders with your provisioned QA values; use a form encoder for every body value.
 
-> **Security Note**: The classic POST API requires `apipassword`, but a password in browser-submitted HTML is visible to the user. Keep this method only for backward compatibility. Use PayGov Secure for new public-facing integrations.
+```http
+POST {Token URL}
+Content-Type: application/x-www-form-urlencoded
 
----
-## 3B. PayGov Secure Vendor Configuration (OAuth-Based)
+grant_type=client_credentials&client_id=YOUR_CLIENT_ID&client_secret=URL_ENCODED_CLIENT_SECRET&scope=URL_ENCODED_SCOPE
+```
 
-PayGov Secure is configured in back-office vendor administration and uses OAuth credentials rather than the classic POST API's `apipassword`.
+Check that the token request succeeded and returned an `access_token`. Keep it server-side and acquire a valid token before initiating checkout; do not continue after token acquisition fails.
 
-### Configuration Notes
-There are 6 required parameter values needed to configure the PayGov Secure payment vendor. The Vendor URL and Token URL are the same for all jurisdictions; the other 4 values are unique for each jurisdiction.
+PayGov validates the token's issuer, audience, lifetime, and signature against its Entra configuration. Audience validation is not a guarantee of caller authorization for every `ttid`; use the TID provisioned for your integration.
 
-For jurisdiction-specific values, contact PayGov Integration Support through your established support channel.
+### 3. Submit the Payment Request
 
-| Parameter | Value | Jurisdiction-Specific |
-|-----------|-------|------------------------|
-| Vendor URL | Test: `https://qa-pay.paygov.us/api/securepost.aspx`<br>Production: `https://pay.paygov.us/api/securepost.aspx` | No |
-| Transaction Type ID | Provided per client | Yes |
-| Token URL | `https://login.microsoftonline.com/60446fdc-fc00-4089-aa2e-d8670a2cc5f7/oauth2/v2.0/token` | No |
-| Scope | Provided per client | Yes |
-| Client ID | Provided per client | Yes |
-| Client Secret | Provided per client | Yes |
+POST to the Secure QA URL with `application/x-www-form-urlencoded`. Send the token in the **`AccessToken` form field**, not solely in a bearer header, a query string, or JSON.
 
-### Back-Office Setup Steps
-1. In the back-office side menu, go to `Administration > Financial Setup > Payment Vendors`.
-2. On the Payment Vendor list page click `Add Back Office Vendor`, or `Add Portal Vendor`, depending on whether you want to enable the payment vendor for back-office or portal payments.
-3. In the `Configure Payment Vendor` dialog, select `PayGov Secure` from the `Select Vendor` dropdown. The dialog will display 6 parameters in the Vendor Configuration section.
-4. Enter the jurisdiction's parameter values. Vendor URL and Token URL are shared across jurisdictions, while Transaction Type ID, Scope, Client ID, and Client Secret are client-specific.
+```http
+POST {Secure URL (QA)}
+Content-Type: application/x-www-form-urlencoded
 
-### Secure Server-to-Server Integration
+AccessToken=URL_ENCODED_ACCESS_TOKEN&ttid=YOUR_TEST_TTID&successURL=URL_ENCODED_HTTPS_RETURN_URL&paymentAmount=YOUR_VALIDATED_AMOUNT&orderToken=YOUR_ORDER_TOKEN
+```
 
-The client application must call SecurePost from its server. The client secret and Entra access token must not be sent to or embedded in the payer's browser. Secure uses the OAuth 2.0 client credentials grant; PayGov validates the access token against the configured application ID.
+Use the [request field reference](#request-fields) for optional values and TID-specific fields. Configure your HTTP client **not to follow this request's redirect automatically**.
 
-The client server obtains an access token from the configured Microsoft Entra token URL, then sends a form-encoded HTTP POST to the Secure Vendor URL. The attached `SecurePost.aspx.cs` source confirms these fields:
+### 4. Redirect the Payer to Checkout
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `AccessToken` | Yes | Entra access token; include in the server-to-server POST only |
-| `ttid` | Yes | Transaction Type ID provisioned by PayGov |
-| `SuccessURL` | Yes | Client's return URL after payment |
-| `paymentAmount` | Yes | Total amount to charge |
-| `CancelURL` | No | Optional cancellation return URL |
-| `orderToken` | No | Client's correlation value returned to the client |
-| `FirstName`, `LastName`, `Address1`, `City`, `State`, `ZipCode`, `Phone`, `Email` | No | Optional payer details |
-| `ShippingAmount`, `handlingFee` | No | Optional fee fields; handling behavior is shared with the classic POST implementation |
-| TID-specific form fields | As supplied by PayGov | Exact names, values, and requirements are supplied individually for your `ttid`; see [Form Fields](#6-form-fields-for-your-transaction-type) |
+The handler passes the request to a database-backed service, receives a `postToken`, and redirects to `/EndUser/PaymentAgency.aspx?ttid=<ttid>&postToken=<guid>`.
 
-PayGov validates the token, stores the payment request, and responds with a redirect to its hosted payment page. The client server must forward PayGov's `Location` to the payer's browser as a redirect. Do not follow the redirect server-side and return the payment page as a client response, and do not forward `AccessToken` or `ClientSecret` to the browser.
+Before redirecting the browser:
 
-PayGov confirms sensitive request values and IdentityModel PII-enabled diagnostics are sanitized before production telemetry is stored.
+1. Check for an HTTP redirect with a `Location` header; treat a missing or unexpected response as an error.
+2. Resolve a relative `Location` against the Secure endpoint URL.
+3. Verify HTTPS, the exact PayGov origin for the selected environment, and the expected `/EndUser/PaymentAgency.aspx` destination with the submitted `ttid` and a GUID `postToken`.
+4. Redirect the payer's browser to that verified URL. Never forward the token or client secret, proxy the payment page, or present a location-code/error page as successful checkout initiation.
 
-### Method Separation
-Use this section only for PayGov Secure vendor setup. The rest of this document (including `ttid` + `apipassword` examples) describes the POST API method.
+These are client safeguards confirmed by PayGov, not boundaries the handler enforces on your application. See [payment results](#payment-results) for the next stage.
 
----
-## 4. Required Core Parameters
-These must be present or the request is rejected and logged.
+## Endpoints and Setup Values
 
-| Field | Required | Description | Notes |
-|-------|----------|-------------|-------|
-| `ttid` | Yes | Transaction Type ID | Assigned by PayGov; identifies agency + payment scenario. Must be an integer. |
-| `apipassword` | Yes | API password | Must match the one provisioned for the `ttid`. Case sensitive. |
-| `successURL` | Yes | URL to redirect after successful payment | Must be reachable externally. Provide full absolute URL. |
-| `paymentAmount` | Yes | Total amount to charge | Decimal (format you provide). You are responsible for computing any item totals before posting. |
+| Endpoint | QA | Production |
+|----------|----|------------|
+| Secure URL | `https://qa-pay.paygov.us/api/securepost.aspx` | `https://pay.paygov.us/api/securepost.aspx` |
+| Classic POST URL | `https://qa-pay.paygov.us/API/PostAPI.aspx` | `https://pay.paygov.us/api/postapi.aspx` |
 
-> Implementation detail: The supplied server source accesses the password and success URL with inconsistent capitalization. Use the exact field names shown above and in the examples; do not rely on undocumented casing variations.
+Both integration methods use an HTTPS form-encoded POST. Use QA for development and PayGov-approved test payments.
 
-### Optional Tracking Parameter
-| Field | Required | Description |
-|-------|----------|-------------|
-| `orderToken` | No | Your tracking identifier echoed back on success for correlation (string). |
+| Setup value | Purpose |
+|-------------|---------|
+| Transaction Type ID (`ttid`) | PayGov-provisioned payment scenario for your integration and environment |
+| Token URL (Secure) | `https://login.microsoftonline.com/60446fdc-fc00-4089-aa2e-d8670a2cc5f7/oauth2/v2.0/token` |
+| Scope (Secure) | PayGov-provided resource scope |
+| Client ID (Secure) | Your provisioned Entra client identifier |
+| Client Secret (Secure) | Your server-side client credential |
+| API password (classic POST) | Shared password provisioned for the TID; not needed for Secure |
 
----
-## 5. Optional Standard User / Order Context Fields
-If supplied, these are stored with the payment request and can pre-fill or contextualize the PayGov payment experience.
+Use the existing Token URL unless PayGov supplies different environment-specific configuration. Do not derive scope or credentials from example values.
 
-| Field | Description | Notes |
-|-------|-------------|-------|
-| `CancelURL` | Where to send the user if they choose to cancel | Not used in the provided page directly for redirect, but stored for later workflow. |
-| `FirstName` / `LastName` | Payer name | Plain text. |
-| `Address1` | Street address | `Address1` is read twice; single value used. |
-| `City` | City |  |
-| `State` | State / Province | Abbreviation recommended. |
-| `ZipCode` | Postal code |  |
-| `Phone` | Contact phone |  |
-| `Email` | Contact email |  |
-| `ShippingAmount` | Shipping component | Mutually exclusive with `handlingFee` due to current code behavior. |
-| `handlingFee` | Handling or service fee | Overrides `ShippingAmount` in current implementation (see Known Issues). |
+## Request Fields
 
-> Important: Do NOT rely on `handlingFee` and `ShippingAmount` both persisting independently. Post one unified fee until code is updated.
+These names are the documented spelling for both methods. ASP.NET request lookups are case-insensitive; capitalization differences in the handlers are not a known validation failure.
 
----
-## 6. Form Fields for Your Transaction Type
+| Field | Required for | Value |
+|-------|--------------|-------|
+| `ttid` | Both | PayGov-provided integer Transaction Type ID |
+| `paymentAmount` | Both | Payment amount computed and validated by your server |
+| `successURL` | Both | Your HTTPS browser-return URL |
+| `AccessToken` | Secure only | Access token obtained server-side |
+| `apipassword` | Classic POST only | Password provisioned for the submitted TID |
+| `orderToken` | Optional, both | Your order-correlation value; not an idempotency guarantee |
+| `CancelURL` | Optional, both | Cancellation-return URL stored for downstream processing |
+| `FirstName`, `LastName` | Optional, both | Payer name |
+| `Address1`, `City`, `State`, `ZipCode` | Optional, both | Payer address |
+| `Phone`, `Email` | Optional, both | Payer contact details |
+| `ShippingAmount`, `handlingFee` | Optional, both | Independently parsed fee values passed separately to storage; downstream fee handling is not established by these handlers |
+| TID-specific fields | As supplied by PayGov | See [fields for your Transaction Type](FORM_ENTITY_REFERENCE.md) |
 
-Form fields are different for each Transaction Type ID (TID), sent as `ttid`. PayGov supplies the exact field names, required values, and format requirements individually for your TID.
+**Client safeguards:** validate required values, amounts, and return URLs on a trusted server. The handlers check required-field presence, not non-empty values; invalid `paymentAmount` parsing becomes zero. Decimal parsing uses the server's current culture, so confirm your amount format in QA. Invalid optional fee parsing leaves that value unset.
 
-Send these fields alongside the standard payment parameters using the names exactly as supplied. There is no universal field list to choose from, and you do not need to construct or interpret field names.
+## Payment Results
 
-Use only your assigned fields. Changing field names or required status can affect the payment form's configuration; contact PayGov Integration Support for any additions or changes.
+After hosted checkout, downstream pages may return the payer to `successURL` or use `CancelURL`. The initial handlers store these URLs and `orderToken`; they do not implement the final browser-return query string.
 
-See [Form Fields for Your Transaction Type](FORM_ENTITY_REFERENCE.md).
+If your browser return includes `OrderId` or `orderToken`, treat them as informational correlation values, **not proof of payment**. Do not mark an order paid based on the browser return alone.
 
----
-## 7. Redirect on Success
-After successful payment completion, user is redirected (HTTP 302) to your `successURL` with query parameters:
+PayGov's authenticated status/report lookup is authoritative for live payment status. Client access and correlation instructions remain pending; arrange them through PayGov before relying on live results. This reference does not define a status endpoint, webhook, or guaranteed return-query contract.
 
-| Query Parameter | Description |
-|-----------------|-------------|
-| `OrderId` | PayGov unique transaction/order identifier. |
-| `orderToken` | Echo of your originally provided token (if supplied). |
+The supplied handlers do not establish `postToken` expiry, single-use behavior, or order-token uniqueness.
 
-Treat the browser return and its `OrderId` as informational only, not as confirmation that a live payment succeeded. Use PayGov's authenticated status/report lookup for authoritative live status. Contact PayGov Integration Support through your established support channel for access and order-correlation instructions.
+## Classic POST Compatibility
 
----
-## 8. Cancellation
-If you supplied `CancelURL`, downstream pages may use it to route the user back. The initial `postapi.aspx` does not perform cancel logic itself; integration pages that follow may depend on the stored session value.
+Retain this method only for existing integrations. Submit a standard form POST to the Classic POST URL using the [request fields](#request-fields) and the API password provisioned for your TID.
 
----
-## 9. Logging & Monitoring
-* Request collections are passed to internal logging. PayGov confirms sensitive request values and IdentityModel PII-enabled diagnostics are sanitized before production telemetry is stored.
-* Validation failures (missing params, improper `ttid`, incorrect password) are logged under Integration log type.
-* Successfully processed dynamic field additions also generate Integration log entries.
+**A password in a browser-submitted form is visible to the user**, even if the form is generated server-side. Never put production credentials in shared HTML or public source control.
 
-Work with PayGov support for access to diagnostic logs if troubleshooting.
+Existing QA templates use placeholders and auto-submit a browser form:
 
----
-## 10. Security Considerations
+- [Basic form](examples/basic/basic.html)
+- [Form with payer details](examples/with-optional-fields/with-customer-info.html)
+- [Form with PayGov-supplied fields](examples/with-custom-fields/with-custom-fields.html)
 
-### For Static HTML Files
+Replace placeholders only in a controlled test environment. These are compatibility examples, not Secure templates. Checkout initiation, browser returns, and payment confirmation have the same limits described above.
 
-The classic POST examples in this repository are static HTML files meant to be opened directly and are retained for backward compatibility only. They are not recommended for new public-facing integrations. Consider these security aspects:
+## Troubleshooting
 
-| Concern | Recommendation |
+| Symptom | What to check |
 |---------|---------------|
-| Credential storage | A password in a browser-submitted form is visible to the user. Never put production credentials in HTML or public source control. |
-| File access | Limit file access to authorized personnel only. Use file system permissions appropriately. |
-| Transport security | Always use HTTPS for `successURL` endpoints (`https://yoursite.com`). |
-| Input validation | If values are populated from another system before creating HTML files, sanitize inputs to reduce injection risks. |
-| Amount integrity | Ensure payment amounts are validated before being written to HTML files. |
-| Credential management | Keep placeholders in examples. Never put production credentials in browser HTML, even in a controlled environment. |
+| Token acquisition fails | Entra token response, Token URL, scope, client ID, and client secret; do not submit checkout without a valid token |
+| Redirect to `/EndUser/LocationCode.aspx` | Authentication, required fields, and integer `ttid`; this is not a successful checkout redirect |
+| Unexpected redirect or no usable `Location` | Stop the handoff; check the response and request with PayGov rather than redirecting to an unverified destination |
+| Incorrect amount | Server-side calculation and the decimal format tested in QA |
+| Missing TID-specific fields | Use only the assigned names and values; coordinate changes with PayGov |
+| Browser returns but payment status is unclear | Use the authenticated status/report lookup, not the browser return |
 
-### Use Cases
-This static HTML file approach is suitable for:
-- Internal agency use with controlled access
-- Testing and development environments
-- Known and trusted users
+Authentication/required-field failures redirect to the location-code page rather than structured JSON errors. Storage errors are not shown to use that same failure path. A field-processing error may be logged while checkout continues without the supplied field list; opening checkout does not prove every field was accepted.
 
-For new public-facing integrations, use PayGov Secure with the client secret and access token kept on the client server.
+Never log client secrets, access tokens, or full credential-bearing requests in your application. PayGov confirms sensitive request values and IdentityModel diagnostics are sanitized before production telemetry storage; that sanitization pipeline is outside the supplied handler source.
 
----
-## 11. Examples Directory Structure
+## Go-Live Checklist
 
-This repository contains classic POST compatibility examples:
+- [ ] QA credentials and TID-specific fields are provisioned.
+- [ ] Required values, amounts, and return URLs are validated server-side.
+- [ ] Secure token acquisition, form submission, and verified browser handoff work without exposing credentials.
+- [ ] Hosted checkout opens and a PayGov-approved sandbox payment completes.
+- [ ] Browser-return and cancellation behavior have been tested for your integration.
+- [ ] Authoritative live-status access and order correlation are confirmed with PayGov.
+- [ ] Production configuration and applicable merchant responsibilities are confirmed.
 
-```
-examples/
-├── basic/                          # Minimal required fields only
-├── with-optional-fields/           # Payment with customer information
-└── with-custom-fields/             # Payment with TID-specific form fields
-```
+## Back-Office Vendor Setup
 
-### Quick Links to Examples
-- [Basic classic POST form](examples/basic/) - Compatibility example (4 required fields)
-- [Payment with Customer Info](examples/with-optional-fields/) - Including name, address, email
-- [Payment with Form Fields](examples/with-custom-fields/) - Add the fields supplied for your TID
+This is secondary guidance for users configuring an existing payment-vendor integration, not a prerequisite for developers implementing the server-to-server quickstart.
 
-The examples use placeholder credentials and target the QA endpoint. They auto-submit a browser form, which exposes the classic API password to the browser. Do not use this pattern for a new public-facing integration.
+1. Open `Administration > Financial Setup > Payment Vendors`.
+2. Select `Add Back Office Vendor` or `Add Portal Vendor`, as appropriate.
+3. In `Configure Payment Vendor`, select `PayGov Secure`.
+4. Enter Vendor URL, Transaction Type ID, Token URL, Scope, Client ID, and Client Secret using the [setup reference](#endpoints-and-setup-values).
 
-See the linked API documentation sections for field explanations.
+## Support
 
----
-## 12. Known Issues / Quirks in Current Implementation
-| Issue | Impact | Workaround |
-|-------|--------|-----------|
-| Inconsistent field-name capitalization in the implementation | The server accesses password and success URL using different capitalization in validation and later reads. | Use the documented field names exactly; do not depend on other casing variants. |
-| `handlingFee` overwrites `ShippingAmount` | Cannot store both values simultaneously. | Consolidate fees and send only one. |
-| `Address1` read twice | No functional impact; redundant code. | Ignore. |
-| Unassigned or modified form fields | May fail processing or change the payment form's configuration. | Send only the exact fields supplied by PayGov for your TID; coordinate changes with PayGov Support. |
+Use your established PayGov Integration Support channel for provisioning, field changes, diagnostic assistance, and status/report access. Include the environment, TID, and relevant order identifiers when available, but never send client secrets, passwords, access tokens, or card details.
 
----
-## 13. FAQ
-**Q: Can I post multiple line items?**  
-Aggregate them into `paymentAmount` before posting; include any additional form fields supplied by PayGov for your TID.
-
-**Q: How do I know a live payment truly succeeded?**
-The browser return and its `OrderId` are informational, not authoritative confirmation. Use PayGov's authenticated status/report lookup. Ask PayGov Integration Support for the access and correlation steps available to your account.
-
-**Q: Should I URL-encode values?**  
-Standard form submission handles encoding. If constructing manually, URL-encode special characters.
-
-**Q: Can I use JSON?**  
-Not with this endpoint. Only form POST name/value pairs.
-
-**Q: Are query parameters ever returned on failure?**  
-No. Failures remain within PayGov pages; you may receive the user back only if they cancel (using `CancelURL`).
-
-**Q: How do I get test credentials?**  
-Contact PayGov Integration Support through your established support channel to request test credentials.
-
----
-## 14. Change Log (Documentation)
-| Version | Date | Changes |
-|---------|------|---------|
-| 2.2 | 2026-11-14 | Clarified Secure server-to-server POST contract and redirect flow; marked classic POST as compatibility-only and added authoritative live-status guidance. |
-| 2.1 | 2026-05-16 | Added PayGov Secure OAuth vendor configuration section with required parameters and back-office setup steps. |
-| 2.0 | 2025-11-02 | Expanded guide, added prefixes, examples, security, known issues. |
-| 1.0 | (Previous) | Minimal field table only. |
-
----
-## 15. Support
-For provisioning `ttid`, `apipassword`, Transaction Type ID, Scope, Client ID, Client Secret, or troubleshooting logs, contact PayGov integration support with the `orderToken` and `OrderId` values.
-
-For client-specific values, status/report access, or to request PayGov's PCI evidence and merchant-responsibility guidance, contact PayGov Integration Support through your established support channel.
-
----
-## 16. Summary
-Choose the method that matches your implementation model:
-- POST API: Implement the form POST with required core fields, optional payer context, and dynamic form fields.
-- PayGov Secure: Configure the back-office vendor with the 6 required parameters and OAuth credentials.
-
-For new integrations, use Secure from a server-side client. Retain the classic POST API only for backward compatibility. For both methods, use PayGov support channels for jurisdiction-specific provisioning and authoritative live payment status.
+Request PayGov's PCI evidence and merchant-responsibility guidance through the same channel. Hosted checkout and OAuth alone do not guarantee PCI compliance.

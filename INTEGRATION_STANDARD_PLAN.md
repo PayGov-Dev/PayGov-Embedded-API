@@ -1,5 +1,7 @@
 # PayGov integration standard: assessment and high-level plan
 
+> Historical planning record, not the current integration contract. Customer developers should start with the [developer portal](README.md) and [integration reference](API_DOCUMENTATION.md); the source-aligned authoring rules are in [.github/copilot-instructions.md](.github/copilot-instructions.md).
+
 ## Executive recommendation
 
 Keep this as a **developer reference, not a platform project**: one landing page, two short integration paths, and no new SDK or payment service unless the current flows cannot meet the minimum security requirements.
