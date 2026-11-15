@@ -1,18 +1,16 @@
 # PayGov Payment Integrations - Documentation & Examples
 
-> **Integrate PayGov payment processing using POST API or PayGov Secure**
+> **A simple developer reference for integrating payments with PayGov**
 
-This repository provides documentation and examples for two PayGov integration methods:
-- POST API (HTML form POST pattern)
-- PayGov Secure (OAuth-based vendor configuration)
+Use **PayGov Secure for new integrations**. It uses a server-to-server POST with Microsoft Entra authentication and sends the payer to PayGov's hosted payment page. Keep the classic POST API for backward-compatible integrations; its shared API password is exposed when placed in browser-submitted HTML.
 
 ---
 
 ## 🚀 Quick Start
 
-**Want API details?** → See [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
+**Want setup and field details?** → See [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
 
-**Need code now?** → Browse [examples/](examples/) (3 examples)
+**Maintaining a classic POST integration?** → Browse the [compatibility examples](examples/)
 
 **Example Form Entities** → See [FORM_ENTITY_REFERENCE.md](FORM_ENTITY_REFERENCE.md)
 
@@ -35,39 +33,23 @@ This repository provides documentation and examples for two PayGov integration m
 
 ### Choose Your Integration Method
 
-#### Method 1: POST API (HTML Form POST)
-1. **Edit the HTML file** - Fill in your `ttid`, `apipassword`, and payment details
-2. **User opens the file** - Double-click the .html file
-3. **Form auto-submits** - Page loads and immediately submits to PayGov
-4. **PayGov collects payment** - User enters payment information securely
-5. **User redirected back** - After payment, user returns to your `successURL`
+#### Recommended for new integrations: PayGov Secure
 
-#### Method 2: PayGov Secure (OAuth Vendor Configuration)
-1. **Configure vendor in back-office** - Go to `Administration > Financial Setup > Payment Vendors`
-2. **Add vendor** - Click `Add Back Office Vendor` or `Add Portal Vendor`
-3. **Select vendor type** - Choose `PayGov Secure`
-4. **Enter 6 required parameters** - Vendor URL, Transaction Type ID, Token URL, Scope, Client ID, Client Secret
-5. **Use configured vendor** - Submit payments through the configured PayGov Secure flow
+1. Configure the PayGov Secure vendor in `Administration > Financial Setup > Payment Vendors`.
+2. Obtain the jurisdiction-specific transaction type ID, scope, client ID, and client secret from PayGov.
+3. From your server, acquire an Entra access token using the client credentials grant and POST it with the payment fields to the Secure Vendor URL.
+4. Forward PayGov's redirect `Location` to the payer's browser. Keep the client secret and access token on your server; never include them in a browser form.
+5. After payment, treat the browser return as informational. Use PayGov's authenticated status/report lookup to confirm a live payment; ask PayGov for client access and correlation instructions.
 
-### Example
+See [PayGov Secure setup and request fields](API_DOCUMENTATION.md#3b-paygov-secure-server-to-server-integration).
 
-```html
-<html>
-<head>
-    <title>Processing Payment...</title>
-</head>
-<body onload="document.form1.submit();">
-    <form name="form1" method="post" action="https://pay.paygov.us/api/postapi.aspx">
-        <input name="ttid" type="hidden" value="YOUR_TTID">
-        <input name="apipassword" type="hidden" value="YOUR_API_PASSWORD">
-        <input name="paymentAmount" type="hidden" value="100.00">
-        <input name="successURL" type="hidden" value="https://yoursite.com/success">
-    </form>
-</body>
-</html>
-```
+#### Backward compatibility: classic POST API
 
-**Edit the HTML file with real values. User opens it. Form auto-submits to PayGov.**
+1. Submit `ttid`, `apipassword`, `paymentAmount`, and `successURL` to the POST API.
+2. PayGov redirects the payer to its hosted payment page.
+3. Keep the method only where compatibility requires it. A password embedded in an HTML form is visible to the browser and must not be used for new public-facing integrations.
+
+See the [classic POST API reference](API_DOCUMENTATION.md#2-endpoint--method) and [compatibility examples](examples/).
 
 ---
 
@@ -75,8 +57,7 @@ This repository provides documentation and examples for two PayGov integration m
 
 | What You Need | Where to Go |
 |---------------|-------------|
-| Quick proof of concept | [basic/](examples/basic/) |
-| Simple payment processing | [basic/](examples/basic/) |
+| Existing classic POST integration | [basic compatibility example](examples/basic/) |
 | Collect customer information | [with-optional-fields/](examples/with-optional-fields/) |
 | Dynamic custom fields | [with-custom-fields/](examples/with-custom-fields/) |
 
@@ -86,7 +67,7 @@ This repository provides documentation and examples for two PayGov integration m
 
 ### For HTML Files
 
-These examples are static HTML files that users open directly:
+The classic POST examples are static HTML files that users open directly:
 
 ✅ **This approach is suitable for:**
 - Testing and development
@@ -95,18 +76,19 @@ These examples are static HTML files that users open directly:
 - Known trusted users
 
 ⚠️ **Important Notes:**
-- The `apipassword` is hardcoded in the HTML file
+- The `apipassword` is embedded in the HTML form and visible to the user
 - Files should be stored securely and not shared publicly
-- Consider using test credentials for examples
-- For public-facing integrations, consider server-side generation
+- Examples use placeholders; never replace them with production credentials
+- Do not use this browser-submitted password flow for new public-facing integrations; use PayGov Secure instead
 
 ### Best Practices
 
 ✅ **DO:**
-- Keep HTML files with credentials in secure locations
-- Use test credentials when sharing examples
-- Validate payment amounts before creating HTML files
+- Keep reusable credentials server-side
+- Use placeholders in shared examples
+- Compute and validate payment amounts on a trusted server
 - Use HTTPS for all `successURL` endpoints
+- Request PayGov's PCI evidence and merchant-responsibility guidance through your established support channel
 
 ❌ **DON'T:**
 - Share production credentials publicly
@@ -128,14 +110,20 @@ To configure the PayGov Secure integration, configure the payment vendor as foll
 
 | Parameter | Value | Notes |
 |-----------|-------|-------|
-| Vendor URL | `https://qa-pay.paygov.us/api/securepost.aspx` | Same for all jurisdictions |
+| Vendor URL | Test: `https://qa-pay.paygov.us/api/securepost.aspx`<br>Production: `https://pay.paygov.us/api/securepost.aspx` | Same for all jurisdictions |
 | Transaction Type ID | Unique per client | Provided by PayGov |
 | Token URL | `https://login.microsoftonline.com/60446fdc-fc00-4089-aa2e-d8670a2cc5f7/oauth2/v2.0/token` | Same for all jurisdictions |
 | Scope | Unique per client | Provided by PayGov |
 | Client ID | Unique per client | Provided by PayGov |
 | Client Secret | Unique per client | Provided by PayGov |
 
-For questions about a client's parameter values or other client-specific issues, email Cal at PayGov: `cal@paygov.us`.
+For jurisdiction-specific values, contact PayGov Integration Support through your established support channel.
+
+### Secure Request and Redirect
+
+The client server POSTs `AccessToken`, `ttid`, `SuccessURL`, and `paymentAmount` to the configured Vendor URL. Optional fields include `CancelURL`, `orderToken`, payer details, `ShippingAmount`, `handlingFee`, and dynamic form fields with `F-`, `CP-`, or `CPR-` prefixes. The endpoint validates the access token against the configured Entra application ID and then redirects to PayGov's hosted payment page. The client server forwards PayGov's `Location` to the payer's browser. The browser must never receive the access token or client secret.
+
+Sensitive request values and IdentityModel PII-enabled diagnostics are sanitized before PayGov production telemetry is stored.
 
 Note: The HTML files in `examples/` demonstrate the POST API method and are not templates for the PayGov Secure vendor configuration.
 
@@ -172,6 +160,7 @@ PayGov Secure fixed URLs:
 Endpoint: https://pay.paygov.us/api/postapi.aspx
 Credentials: Contact PayGov for production credentials
 ```
+PayGov Secure Vendor URL: `https://pay.paygov.us/api/securepost.aspx`
 
 **Always test in the test environment first!**
 
@@ -180,20 +169,18 @@ Credentials: Contact PayGov for production credentials
 ## 📚 Documentation Guide
 
 ### For First-Time Users
-1. Read [GETTING_STARTED.md](GETTING_STARTED.md) → 10 minutes
-2. Browse [examples/](examples/) → Pick one that fits
-3. Get credentials from PayGov support
-4. Implement server-side form generation
-5. Test in test environment
-6. Deploy to production
+1. Choose PayGov Secure for a new integration; see the [Secure setup](API_DOCUMENTATION.md#3b-paygov-secure-server-to-server-integration).
+2. Contact PayGov Integration Support for your jurisdiction-specific values.
+3. Complete sandbox acceptance by displaying the PayGov payment page and completing a PayGov-approved test payment.
+4. Ask PayGov how to access and correlate the authenticated status/report lookup before relying on live payment results.
 
 ### For Experienced Developers
-1. Browse [examples/](examples/) → Copy the pattern
-2. Reference [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for field details
-3. Implement and test
+1. Follow [PayGov Secure](API_DOCUMENTATION.md#3b-paygov-secure-server-to-server-integration) for a new integration.
+2. Use [classic POST examples](examples/) only to maintain a compatible integration.
+3. Reference [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for field details
 
 ### For Security/Compliance Teams
-- Review [Security Best Practices](GETTING_STARTED.md#-security-best-practices)
+- Review [Security Considerations](#-security-considerations)
 - Check [Known Issues](API_DOCUMENTATION.md#12-known-issues--quirks-in-current-implementation)
 - Verify credential storage approach
 
@@ -204,7 +191,6 @@ Credentials: Contact PayGov for production credentials
 ```
 Embeded_Post_Documentation/
 ├── README.md                      # This file
-├── GETTING_STARTED.md            # Start here if you're new
 ├── API_DOCUMENTATION.md          # Complete technical reference
 └── examples/                     # Code examples
     ├── README.md                  # Examples overview
@@ -218,58 +204,42 @@ Embeded_Post_Documentation/
 ## 🆘 Getting Help
 
 ### Documentation Questions
-- Check [GETTING_STARTED.md](GETTING_STARTED.md)
 - See [API_DOCUMENTATION.md FAQ](API_DOCUMENTATION.md#13-faq)
-- Review example READMEs
+- Browse the [classic POST examples](examples/)
 
 ### Credentials & Access
 Contact PayGov Integration Support
 
 ### Technical Issues
-- Review [Common Issues](GETTING_STARTED.md#-common-issues)
 - Check [Known Issues](API_DOCUMENTATION.md#12-known-issues--quirks-in-current-implementation)
 - Verify field name casing (common issue!)
 
 ---
 
-## ⚡ Minimal Example
+## Minimal Example
 
-The absolute minimum to process a payment:
-
-```html
-<html>
-<head></head>
-<body onload="document.form1.submit();">
-    <form name="form1" method="post" action="https://pay.paygov.us/api/postapi.aspx">
-        <input name="ttid" type="hidden" value="YOUR_TTID">
-        <input name="apipassword" type="hidden" value="YOUR_API_PASSWORD">
-        <input name="paymentAmount" type="hidden" value="100.00">
-        <input name="successURL" type="hidden" value="https://yoursite.com/success">
-    </form>
-</body>
-</html>
-```
-
-See [examples/basic/](examples/basic/) for complete working example.
+For new integrations, follow [PayGov Secure](API_DOCUMENTATION.md#3b-paygov-secure-server-to-server-integration). The static HTML [basic example](examples/basic/) demonstrates classic POST for backward compatibility only; it is not a recommended pattern for new public-facing integrations.
 
 ---
 
-## 📝 Required Fields
+## Classic POST Required Fields
 
 Every payment form must include:
 
 | Field | Description | Example |
 |-------|-------------|---------|
-| `ttid` | Transaction Type ID | `21303` |
-| `apipassword` | API Password | Contact PayGov |
-| `paymentAmount` | Payment amount | `100.00` |
-| `successURL` | Success redirect URL | `https://yoursite.com/success` |
+| `ttid` | Transaction Type ID | Assigned by PayGov |
+| `apipassword` | API Password | Provisioned by PayGov; do not put in a public example |
+| `paymentAmount` | Payment amount | Computed and validated by your server |
+| `successURL` | Success redirect URL | Your HTTPS return URL |
+
+This method posts the API password from the browser. That credential is visible to the user and is retained here only for backward compatibility.
 
 ---
 
 ## 🔄 Success Response
 
-After payment, user is redirected to your `successURL` with:
+After payment, the browser may return to your `successURL` with:
 
 ```
 https://yoursite.com/success?OrderId=12345&orderToken=YOUR_TOKEN
@@ -277,17 +247,19 @@ https://yoursite.com/success?OrderId=12345&orderToken=YOUR_TOKEN
 
 | Parameter | Description |
 |-----------|-------------|
-| `OrderId` | PayGov's unique transaction ID |
+| `OrderId` | PayGov's unique transaction ID; use it with the authenticated status/report lookup |
 | `orderToken` | Your original tracking token (if provided) |
+
+The browser return is informational, not authoritative confirmation of a live payment. Confirm live status through PayGov's authenticated status/report lookup.
 
 ---
 
 ## 🎓 Learning Path
 
-**Beginner** (30 min)
-1. Read [GETTING_STARTED.md](GETTING_STARTED.md)
-2. Try [basic example](examples/basic/)
-3. Test with test credentials
+**New integration**
+1. Read the [PayGov Secure setup](API_DOCUMENTATION.md#3b-paygov-secure-server-to-server-integration).
+2. Configure server-side client credentials.
+3. Complete sandbox acceptance and confirm live-status access with PayGov Support.
 
 **Intermediate** (1-2 hours)
 1. Add [customer information](examples/with-optional-fields/)
@@ -306,13 +278,14 @@ https://yoursite.com/success?OrderId=12345&orderToken=YOUR_TOKEN
 Before going to production:
 
 - [ ] Obtained test credentials from PayGov
-- [ ] Form auto-submits correctly
+- [ ] Secure server POST and browser redirect work without exposing the access token
 - [ ] All required fields present
-- [ ] Field names match exact casing
+- [ ] Field names match the documented names
 - [ ] Success URL works and handles `OrderId`
 - [ ] Credentials stored securely (not hardcoded)
 - [ ] Amount calculated server-side
-- [ ] Tested in production environment
+- [ ] Displayed the hosted payment page and completed a sandbox payment with a PayGov-approved test card
+- [ ] Confirmed how to use the authenticated status/report lookup for live payments
 - [ ] Monitoring in place
 
 ---
@@ -327,10 +300,10 @@ Before going to production:
 
 ---
 
-## 📄 Version Information
+## Version Information
 
-- **Documentation Version:** 2.0
-- **Last Updated:** November 15, 2025
+- **Documentation Version:** 2.2
+- **Last Updated:** November 14, 2026
 - **API Endpoint:** Stable (no version in URL)
 
 ---
@@ -338,4 +311,4 @@ Before going to production:
 ## 🎉 Next Steps
 
 1. **[API Reference](API_DOCUMENTATION.md)** → When you need details
-2. **[Pick an Example](examples/)** → Working code you can use
+2. **[Review a compatibility example](examples/)** → Classic POST only
