@@ -8,6 +8,8 @@ Both methods start PayGov-hosted checkout; neither initial request charges a car
 
 Secure uses Microsoft Entra OAuth 2.0 client credentials. Run the following steps on your application's server; keep the client secret and access token out of the payer's browser.
 
+**Working example:** [Run the Node.js QA sample](examples/secure/README.md). Its [checkout code](examples/secure/checkout.mjs) implements the token request, form encoding, and redirect checks below; [server code](examples/secure/server.mjs) shows the browser handoff.
+
 ### 1. Obtain Your Setup Values
 
 Use the [setup reference](#endpoints-and-setup-values) and the environment-specific credentials provided by PayGov. Start in QA.

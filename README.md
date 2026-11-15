@@ -11,6 +11,8 @@ Integrate your application with PayGov's hosted checkout. Your application suppl
 | PayGov Secure | New integrations using server-side Microsoft Entra authentication | [Secure quickstart](API_DOCUMENTATION.md#paygov-secure-quickstart) |
 | Classic POST | Maintaining an existing shared-password integration | [Compatibility guide](API_DOCUMENTATION.md#classic-post-compatibility) |
 
+**Try working code:** [Secure Node.js example](examples/secure/README.md) - no packages required; runs locally against QA.
+
 ## What Is a TTID?
 
 A **Transaction Type ID**, also called a **TID** or **TTID**, is a number PayGov assigns to a configured payment type for your agency. Send it in the `ttid` request field so PayGov knows which payment setup and form to use.
