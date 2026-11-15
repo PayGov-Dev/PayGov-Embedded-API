@@ -253,22 +253,13 @@ Contact PayGov Integration Support through your established support channel to r
 | 1.0 | (Previous) | Minimal field table only. |
 
 ---
-## 15. Next Recommended Enhancements (Platform)
-* Normalize field name casing to remove ambiguity.  
-* Separate `handlingFee` vs `ShippingAmount` storage.  
-* Provide a read-only API endpoint for programmatic form field metadata.  
-* Avoid mutating global required flags during runtime submissions (treat required override as request-scoped).  
-* Add explicit cancel redirect logic & failure callback support.  
-* Return JSON body (optional) in addition to redirect for modern SPA integrations.
-
----
-## 16. Support
+## 15. Support
 For provisioning `ttid`, `apipassword`, Transaction Type ID, Scope, Client ID, Client Secret, or troubleshooting logs, contact PayGov integration support with the `orderToken` and `OrderId` values.
 
 For client-specific values, status/report access, or to request PayGov's PCI evidence and merchant-responsibility guidance, contact PayGov Integration Support through your established support channel.
 
 ---
-## 17. Summary
+## 16. Summary
 Choose the method that matches your implementation model:
 - POST API: Implement the form POST with required core fields, optional payer context, and dynamic form fields.
 - PayGov Secure: Configure the back-office vendor with the 6 required parameters and OAuth credentials.
